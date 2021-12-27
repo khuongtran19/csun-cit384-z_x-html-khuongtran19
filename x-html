@@ -1,0 +1,25 @@
+#! /bin/bash
+
+X_SIZE = 1024
+FILENAME = $1
+DATE = ${date}
+SIZE = $(stat -f "%z" $FILENAME)
+
+if [[${SIZE} -gt ${X_SIZE} ]]; then
+	HTML_TYPE="text/html" 
+else
+	HTML_TYPE="application/x-html
+fi
+
+echo HTTP/1.1 200
+echo Server: /cit-384/${USER}
+echo Date: ${DATE}
+echo Content-type: ${HTML_TYPE}
+echo Content-length: ${SIZE}
+echo ""
+
+if [[${SIZE} -gt X_SIZE]]; then
+cat ${FILENAME} | compress - | base64
+else
+cat ${FILENAME}
+fi

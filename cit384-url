@@ -1,0 +1,37 @@
+#! /bin/bash
+
+HOSTNAME = $1
+PORT = $2
+URI = $3
+
+cat << EOF > /tmp/http_request
+GET ${URI} HTTP/1.1
+host: ${HOSTNAME}
+
+EOF
+
+socket ${HOSTNAME} ${PORT} < /tmp/http_request > /tmp/http_response
+
+body = FALSE
+
+cat /tmp/http_response | while read name value ; do
+if [[$name == "Content-type:"]]; then
+	if [[$value == "application/x-html"]]; then
+		body = TRUE
+	fi
+fi
+done
+
+cat /tmp/http_response | { read name value
+while [[ -n $name ]]; do
+read name value
+done
+while read line ; do
+echo $line
+done
+} > /tmp/http_body
+if [[ $body == FALSE ]] ; then
+:
+else
+base64 -d | uncompress
+fi < /tmp/http_body
